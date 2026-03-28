@@ -9,12 +9,28 @@ import { AuthService } from './auth.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="admin-container">
-      <div class="header">
+    <div class="admin-page-wrapper">
+      <div class="admin-container">
+        <div class="header">
         <h1>Owner Dashboard</h1>
         <div class="user-info">
           <span>{{ auth.user()?.email }}</span>
           <button class="logout-btn" (click)="auth.logout()">Logout</button>
+        </div>
+      </div>
+
+      <div class="summary-bar">
+        <div class="summary-item pending">
+          <span class="count">{{ pendingBookings().length }}</span>
+          <span class="label">Pending</span>
+        </div>
+        <div class="summary-item confirmed">
+          <span class="count">{{ confirmedBookings().length }}</span>
+          <span class="label">Confirmed</span>
+        </div>
+        <div class="summary-item open">
+          <span class="count">{{ totalOpenSlots() }}</span>
+          <span class="label">Open Slots</span>
         </div>
       </div>
       
@@ -70,7 +86,7 @@ import { AuthService } from './auth.service';
                       @if (getBookingForSlot(selectedDate()!, slot.time); as booking) {
                         <div class="slot-booking-details">
                           <div class="customer-name"><strong>{{ booking.customerName }}</strong> ({{ booking.numberOfPeople }} people)</div>
-                          <div class="customer-email">{{ booking.customerEmail }}</div>
+                          <div class="customer-info">{{ booking.customerEmail }} {{ booking.customerPhone ? '| ' + booking.customerPhone : '' }}</div>
                           @if (booking.comments) {
                             <div class="customer-notes">Note: {{ booking.comments }}</div>
                           }
@@ -136,6 +152,10 @@ import { AuthService } from './auth.service';
               <input [(ngModel)]="manualEmail" placeholder="customer@example.com" />
             </div>
             <div class="form-group">
+              <label>Phone (Optional)</label>
+              <input [(ngModel)]="manualPhone" placeholder="07123 456789" />
+            </div>
+            <div class="form-group">
               <label>People</label>
               <input type="number" [(ngModel)]="manualPeople" min="1" max="6" />
             </div>
@@ -176,7 +196,7 @@ import { AuthService } from './auth.service';
                   <td>{{ booking.slot }}</td>
                   <td>
                     <div><strong>{{ booking.customerName }}</strong></div>
-                    <div class="email-sub">{{ booking.customerEmail }}</div>
+                    <div class="email-sub">{{ booking.customerEmail }} {{ booking.customerPhone ? '| ' + booking.customerPhone : '' }}</div>
                   </td>
                   <td>{{ booking.numberOfPeople }}</td>
                   <td class="comment-cell">{{ booking.comments || '-' }}</td>
@@ -215,12 +235,12 @@ import { AuthService } from './auth.service';
                   <td>{{ booking.slot }}</td>
                   <td>
                     <div><strong>{{ booking.customerName }}</strong></div>
-                    <div class="email-sub">{{ booking.customerEmail }}</div>
+                    <div class="email-sub">{{ booking.customerEmail }} {{ booking.customerPhone ? '| ' + booking.customerPhone : '' }}</div>
                   </td>
                   <td>{{ booking.numberOfPeople }}</td>
                   <td class="comment-cell">{{ booking.comments || '-' }}</td>
                   <td>
-                    <button class="cancel-btn" (click)="bookingService.cancelBooking(booking.id)">Cancel</button>
+                    <button class="cancel-btn" (click)="cancelBookingWithAlert(booking)">Cancel</button>
                   </td>
                 </tr>
               } @empty {
@@ -259,17 +279,33 @@ import { AuthService } from './auth.service';
         </div>
       }
     </div>
+  </div>
   `,
   styles: [`
+    .admin-page-wrapper { background-color: #f8f0ff; min-height: 100vh; margin-top: -1.5rem; padding-top: 1.5rem; }
     .admin-container { max-width: 1200px; margin: 0 auto; padding: 20px; font-family: sans-serif; color: #4a4a4a; }
     
     @media (max-width: 600px) {
       .admin-container { padding: 10px; }
     }
 
-    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ffe4e8; padding-bottom: 1rem; margin-bottom: 2rem; }
+    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ffe4e8; padding-bottom: 1rem; margin-bottom: 1rem; }
     h1, h2, h3 { color: #d63384; }
     .logout-btn { padding: 6px 12px; background: #8a6d71; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
+
+    .summary-bar { display: flex; gap: 15px; margin-bottom: 2rem; }
+    .summary-item { flex: 1; padding: 15px; border-radius: 12px; background: white; text-align: center; box-shadow: 0 4px 10px rgba(214, 51, 132, 0.05); display: flex; flex-direction: column; }
+    .summary-item .count { font-size: 1.5rem; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+    .summary-item .label { font-size: 0.75rem; text-transform: uppercase; font-weight: bold; opacity: 0.7; }
+    
+    .summary-item.pending { color: #856404; border-bottom: 4px solid #ffc107; }
+    .summary-item.confirmed { color: #d63384; border-bottom: 4px solid #d63384; }
+    .summary-item.open { color: #155724; border-bottom: 4px solid #28a745; }
+
+    @media (max-width: 600px) {
+      .summary-bar { flex-wrap: wrap; }
+      .summary-item { min-width: 100px; }
+    }
 
     .dashboard-layout { display: grid; grid-template-columns: 1fr 350px; gap: 30px; margin-bottom: 3rem; }
 
@@ -396,6 +432,7 @@ export class AdminView {
   directBookingSlot = signal<SlotTime | null>(null);
   manualName = signal('');
   manualEmail = signal('');
+  manualPhone = signal('');
   manualPeople = signal(1);
   manualComments = signal('');
 
@@ -409,6 +446,11 @@ export class AdminView {
     return this.bookingService.allBookings()
       .filter(b => b.status === 'confirmed')
       .sort((a, b) => this.compareBookings(a, b));
+  });
+
+  totalOpenSlots = computed(() => {
+    return this.bookingService.daySchedules()
+      .reduce((acc, day) => acc + day.slots.filter(s => s.status === 'open').length, 0);
   });
 
   private compareBookings(a: Booking, b: Booking) {
@@ -504,6 +546,7 @@ export class AdminView {
     this.directBookingSlot.set(slot);
     this.manualName.set('');
     this.manualEmail.set('');
+    this.manualPhone.set('');
     this.manualPeople.set(1);
     this.manualComments.set('Added manually (e.g. Phone/FB)');
   }
@@ -524,6 +567,7 @@ export class AdminView {
         slot,
         customerName: this.manualName(),
         customerEmail: this.manualEmail(),
+        customerPhone: this.manualPhone(),
         numberOfPeople: this.manualPeople(),
         comments: this.manualComments()
       });
@@ -533,6 +577,17 @@ export class AdminView {
       alert('Error: ' + e.message);
     } finally {
       this.processing.set(false);
+    }
+  }
+
+  async cancelBookingWithAlert(booking: Booking) {
+    const contactInfo = booking.customerEmail + (booking.customerPhone ? ' / ' + booking.customerPhone : '');
+    const msg = `Are you sure you want to cancel this booking?\n\n` +
+                `Please get in touch with ${booking.customerName} (${contactInfo}) ` +
+                `to let them know you've cancelled, if this cancellation was not customer initiated.`;
+    
+    if (confirm(msg)) {
+      await this.bookingService.cancelBooking(booking.id);
     }
   }
 

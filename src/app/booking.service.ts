@@ -21,6 +21,7 @@ export interface Booking {
   slot: SlotTime;
   customerName: string;
   customerEmail: string;
+  customerPhone?: string;
   numberOfPeople: number;
   comments: string;
   status: 'pending' | 'confirmed';
@@ -33,10 +34,10 @@ export class BookingService {
   private firestore = inject(Firestore);
   
   // --- EMAILJS CONFIGURATION ---
-  private readonly EMAILJS_SERVICE_ID = 'YOUR_SERVICE_ID';
-  private readonly EMAILJS_PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
-  private readonly ADMIN_TEMPLATE_ID = 'YOUR_ADMIN_TEMPLATE_ID';
-  private readonly CUSTOMER_TEMPLATE_ID = 'YOUR_CUSTOMER_TEMPLATE_ID';
+  private readonly EMAILJS_SERVICE_ID = 'service_bvmfqq6';
+  private readonly EMAILJS_PUBLIC_KEY = '6bUssX0utbFLFWdUb';
+  private readonly ADMIN_TEMPLATE_ID = 'template_sk08yup';
+  private readonly CUSTOMER_TEMPLATE_ID = 'template_8r4gcrg';
 
   readonly daySchedules = signal<DaySchedule[]>([]);
   readonly allBookings = signal<Booking[]>([]);

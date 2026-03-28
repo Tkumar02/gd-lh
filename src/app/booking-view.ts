@@ -14,8 +14,8 @@ import { BookingService, SlotTime } from './booking.service';
       <p class="subtitle">Select a date from the calendar to view available times.</p>
       
       <div class="legend">
-        <div class="legend-item"><span class="dot green"></span> Fully Available (3)</div>
-        <div class="legend-item"><span class="dot yellow"></span> Limited (1-2)</div>
+        <div class="legend-item"><span class="dot green"></span> Good Availability</div>
+        <div class="legend-item"><span class="dot yellow"></span> Limited Availability</div>
         <div class="legend-item"><span class="dot red"></span> Unavailable / Pending</div>
       </div>
 
@@ -84,6 +84,10 @@ import { BookingService, SlotTime } from './booking.service';
                     <input type="email" [(ngModel)]="customerEmail" placeholder="e.g. john@example.com" />
                   </div>
                   <div class="form-group">
+                    <label>Phone Number (Optional)</label>
+                    <input type="tel" [(ngModel)]="customerPhone" placeholder="e.g. 07123 456789" />
+                  </div>
+                  <div class="form-group">
                     <label>Number of People (1-6)</label>
                     <input 
                       type="number" 
@@ -106,7 +110,7 @@ import { BookingService, SlotTime } from './booking.service';
                   <button 
                     class="confirm-btn" 
                     (click)="confirmRequest()" 
-                    [disabled]="!customerName() || !customerEmail() || numberOfPeople() < 1 || numberOfPeople() > 6"
+                    [disabled]="!customerName() || !isValidEmail() || numberOfPeople() < 1 || numberOfPeople() > 6"
                   >
                     Send Booking Request
                   </button>
@@ -201,8 +205,16 @@ export class BookingView {
   selectedSlot = signal<SlotTime | null>(null);
   customerName = signal('');
   customerEmail = signal('');
+  customerPhone = signal('');
   numberOfPeople = signal(1);
   comments = signal('');
+
+  isValidEmail = computed(() => {
+    const email = this.customerEmail().trim();
+    if (!email) return false;
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  });
 
   weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -294,6 +306,7 @@ export class BookingView {
           slot,
           customerName: this.customerName(),
           customerEmail: this.customerEmail(),
+          customerPhone: this.customerPhone(),
           numberOfPeople: this.numberOfPeople(),
           comments: this.comments()
         });
@@ -302,6 +315,7 @@ export class BookingView {
         this.selectedSlot.set(null);
         this.customerName.set('');
         this.customerEmail.set('');
+        this.customerPhone.set('');
         this.numberOfPeople.set(1);
         this.comments.set('');
       } catch (e: any) {
