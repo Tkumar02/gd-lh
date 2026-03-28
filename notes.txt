@@ -1,0 +1,27 @@
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBH614RoabL4FCmJ7fMVsTzQV9bOE15yGc",
+  authDomain: "glazeddesigns-lh.firebaseapp.com",
+  projectId: "glazeddesigns-lh",
+  storageBucket: "glazeddesigns-lh.firebasestorage.app",
+  messagingSenderId: "953216800796",
+  appId: "1:953216800796:web:1711a2a587bc1abb7227d9",
+  measurementId: "G-5RH8XH0ZF2"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+1️⃣ Build Angular app
+ng build
+
+2️⃣ Deploy to Firebase
+firebase deploy --only hosting
