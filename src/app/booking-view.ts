@@ -1,16 +1,23 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { BookingService, SlotTime } from './booking.service';
+import { AuthService } from './auth.service';
 
 @Component({
   selector: 'app-booking-view',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
     <div class="booking-container">
+      @if (auth.user()) {
+        <div class="admin-nav">
+          <a routerLink="/admin" class="back-to-admin-link">← Back to Dashboard</a>
+        </div>
+      }
       <h2>Book Your Studio Slot</h2>
-      <p class="subtitle"><i>Get in touch with us directly if you would like to book a special event, on our facebook page</i></p>
+      <p class="subtitle"><i>For children's birthday parties, groups larger than ten and outside events please get in touch with us directly via our facebook page</i></p>
       <p class="subtitle">Select a date from the calendar to view available times.</p>
       
       <div class="legend">
@@ -128,6 +135,9 @@ import { BookingService, SlotTime } from './booking.service';
   `,
   styles: [`
     .booking-container { max-width: 1000px; margin: 0 auto; padding: 20px; font-family: sans-serif; color: #4a4a4a; }
+    .admin-nav { margin-bottom: 20px; }
+    .back-to-admin-link { text-decoration: none; color: #d63384; font-weight: bold; font-size: 0.9rem; padding: 8px 16px; background: #fff0f3; border: 1px solid #ffe4e8; border-radius: 8px; transition: all 0.2s; }
+    .back-to-admin-link:hover { background: #ffe4e8; }
     h2 { text-align: center; margin-bottom: 0.5rem; color: #d63384; font-weight: 800; }
     .subtitle { text-align: center; margin-bottom: 2rem; color: #8a6d71; }
     
@@ -199,6 +209,7 @@ import { BookingService, SlotTime } from './booking.service';
 })
 export class BookingView {
   bookingService = inject(BookingService);
+  auth = inject(AuthService);
   
   viewDate = signal(new Date());
   selectedDate = signal<string | null>(null);
@@ -258,7 +269,7 @@ export class BookingView {
     const day = this.bookingService.daySchedules().find(d => d.date === dateStr);
     if (!day) return 'red';
     const openCount = day.slots.filter(s => s.status === 'open').length;
-    if (openCount === 3) return 'green';
+    if (openCount >= 3) return 'green';
     if (openCount >= 1) return 'yellow';
     return 'red';
   }

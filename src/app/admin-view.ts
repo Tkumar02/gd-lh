@@ -1,13 +1,14 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { BookingService, SlotTime, SlotStatus, Booking } from './booking.service';
 import { AuthService } from './auth.service';
 
 @Component({
   selector: 'app-admin-view',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
     <div class="admin-page-wrapper">
       <div class="admin-container">
@@ -15,6 +16,7 @@ import { AuthService } from './auth.service';
         <h1>Owner Dashboard</h1>
         <div class="user-info">
           <span>{{ auth.user()?.email }}</span>
+          <a routerLink="/" class="back-to-site-btn">View Customer Site</a>
           <button class="logout-btn" (click)="auth.logout()">Logout</button>
         </div>
       </div>
@@ -291,6 +293,9 @@ import { AuthService } from './auth.service';
 
     .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ffe4e8; padding-bottom: 1rem; margin-bottom: 1rem; }
     h1, h2, h3 { color: #d63384; }
+    .user-info { display: flex; align-items: center; gap: 15px; }
+    .back-to-site-btn { text-decoration: none; color: #d63384; font-weight: 600; font-size: 0.9rem; padding: 6px 12px; border: 1px solid #d63384; border-radius: 4px; transition: all 0.2s; }
+    .back-to-site-btn:hover { background: #d63384; color: white; }
     .logout-btn { padding: 6px 12px; background: #8a6d71; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
 
     .summary-bar { display: flex; gap: 15px; margin-bottom: 2rem; }

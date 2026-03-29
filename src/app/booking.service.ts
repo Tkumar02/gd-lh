@@ -135,7 +135,7 @@ export class BookingService {
     return `Hi ${booking.customerName},\n\n` +
            `Great news! Your pottery painting session for ${booking.date} at ${booking.slot} has been confirmed for ${booking.numberOfPeople} people.\n\n` +
            `LOCATION: 17 St Mary's Close, South Wootton PE30 3LL\n\n` +
-           `ABOUT THE SESSION: This will be a 2-hour guided painting experience where you'll be painting pre-fired bisque pieces. We provide all the bisques, glazes, and brushes you need. Please arrive 10 minutes early. We look forward to seeing you!`;
+           `ABOUT THE SESSION: This will be a 2-hour pottery painting experience with all the equipment required provided. You can select from a wide range of functional and decorative items priced from £9-£30. Payment accepted by cash or card on the day. \n\n Please be aware all finished items will be available within 14 days' to collect. We look forward to seeing you!`;
   }
 
   async confirmBooking(bookingId: string, customBody?: string) {
