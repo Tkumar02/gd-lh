@@ -21,7 +21,7 @@ export interface Booking {
   slot: SlotTime;
   customerName: string;
   customerEmail: string;
-  customerPhone?: string;
+  customerPhone: string;
   numberOfPeople: number;
   comments: string;
   status: 'pending' | 'confirmed';

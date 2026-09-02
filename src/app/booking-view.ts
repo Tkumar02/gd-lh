@@ -91,22 +91,22 @@ import { AuthService } from './auth.service';
                     <input type="email" [(ngModel)]="customerEmail" placeholder="e.g. john@example.com" />
                   </div>
                   <div class="form-group">
-                    <label>Phone Number (Optional)</label>
+                    <label>Phone Number</label>
                     <input type="tel" [(ngModel)]="customerPhone" placeholder="e.g. 07123 456789" />
                   </div>
                   <div class="form-group">
-                    <label>Number of People (1-6)</label>
+                    <label>Number of People (1-10)</label>
                     <input 
                       type="number" 
                       [(ngModel)]="numberOfPeople" 
                       min="1" 
-                      max="6" 
+                      max="10" 
                       readonly
                       style="cursor: default;"
                     />
                     <div class="stepper-controls">
                       <button (click)="adjustPeople(-1)" [disabled]="numberOfPeople() <= 1">-</button>
-                      <button (click)="adjustPeople(1)" [disabled]="numberOfPeople() >= 6">+</button>
+                      <button (click)="adjustPeople(1)" [disabled]="numberOfPeople() >= 10">+</button>
                     </div>
                   </div>
                   <div class="form-group">
@@ -117,7 +117,7 @@ import { AuthService } from './auth.service';
                   <button 
                     class="confirm-btn" 
                     (click)="confirmRequest()" 
-                    [disabled]="!customerName() || !isValidEmail() || numberOfPeople() < 1 || numberOfPeople() > 6"
+                    [disabled]="!customerName() || !isValidEmail() || numberOfPeople() < 1 || numberOfPeople() > 10 || !isValidPhone()"
                   >
                     Send Booking Request
                   </button>
@@ -227,12 +227,20 @@ export class BookingView {
     return re.test(email);
   });
 
+  isValidPhone = computed(() => {
+  // Remove all non-numeric characters (spaces, dashes, etc.)
+  const digitsOnly = this.customerPhone().replace(/\D/g, '');
+  
+  // Accepts numbers between 10 and 15 digits
+  return digitsOnly.length >= 10 && digitsOnly.length <= 15;
+});
+
   weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   adjustPeople(delta: number) {
     const current = this.numberOfPeople();
     const next = current + delta;
-    if (next >= 1 && next <= 6) {
+    if (next >= 1 && next <= 10) {
       this.numberOfPeople.set(next);
     }
   }
